@@ -24,7 +24,7 @@ const defaultEvangelionDeck = {
   counts: [4, 4, 1, 2, 4, 4, 3, 4, 4, 1, 4, 4, 4, 4, 3]
 };
 let editingIndex = null;
-function activeDeckTemplate() { return cardDefinitions.flatMap((card, index) => Array.from({ length: buildCounts[index] }, () => ({ name: card.name, number: card.number, type: card.type, ap: card.ap, bp: card.bp, requiredEnergy: card.requiredEnergy, generatedEnergy: card.generatedEnergy, trigger: card.trigger }))); }
+function activeDeckTemplate() { return cardDefinitions.flatMap((card, index) => Array.from({ length: buildCounts[index] }, () => ({ name: card.name, number: card.number, type: card.type, ap: card.ap, bp: card.bp, requiredEnergy: card.requiredEnergy, generatedEnergy: card.generatedEnergy, trigger: card.trigger, text: card.text || '' }))); }
 const phases = ['ドロー', '移動', 'メイン', 'アタック', 'エンド'];
 const isCharacterType = type => type === 'キャラクター' || type === 'キャラクター（レイド）';
 const isCharacter = card => Boolean(card) && isCharacterType(card.type);
@@ -161,11 +161,11 @@ function setEnergyInput(selectId, inputId, value) {
 function fillCardForm(card, name = card.name, number = card.number) {
   $('custom-card-name').value = name; $('custom-card-number').value = number || ''; $('custom-card-type').value = card.type; $('custom-card-ap').value = card.ap;
   if (isCharacter(card)) { const bpOption = [...$('custom-card-bp').options].some(option => Number(option.value) === card.bp); $('custom-card-bp').value = bpOption ? String(card.bp) : 'other'; $('custom-card-bp-other').value = bpOption ? '' : card.bp; }
-  $('custom-card-trigger').value = card.trigger; setEnergyInput('custom-required-energy', 'custom-required-other', card.requiredEnergy); setEnergyInput('custom-generated-energy', 'custom-generated-other', card.generatedEnergy); syncCardInputs();
+  $('custom-card-trigger').value = card.trigger; $('custom-card-text').value = card.text || ''; setEnergyInput('custom-required-energy', 'custom-required-other', card.requiredEnergy); setEnergyInput('custom-generated-energy', 'custom-generated-other', card.generatedEnergy); syncCardInputs();
 }
 function showCardEditor(title = 'カードを追加') { $('builder-list-view').hidden = true; $('card-editor-view').hidden = false; $('card-editor-title').textContent = title; window.scrollTo({ top: 0, behavior: 'smooth' }); }
 function showCardList() { $('card-editor-view').hidden = true; $('builder-list-view').hidden = false; }
-function resetCardForm() { editingIndex = null; $('add-custom-card').textContent = 'カード一覧に追加'; $('custom-card-name').value = ''; $('custom-card-number').value = ''; $('custom-card-message').textContent = ''; syncCardInputs(); }
+function resetCardForm() { editingIndex = null; $('add-custom-card').textContent = 'カード一覧に追加'; $('custom-card-name').value = ''; $('custom-card-number').value = ''; $('custom-card-text').value = ''; $('custom-card-message').textContent = ''; syncCardInputs(); }
 function startCardEdit(index) { editingIndex = index; fillCardForm(cardDefinitions[index]); $('card-editor-title').textContent = 'カードを編集'; $('add-custom-card').textContent = 'カード情報を更新'; $('custom-card-message').textContent = `「${cardDefinitions[index].name}」を編集中です。`; showCardEditor('カードを編集'); }
 function duplicateCard(index) {
   const card = cardDefinitions[index]; let number = `${card.number || '番号'}-複製`; let suffix = 2;
@@ -187,7 +187,7 @@ function addCustomCard() {
   const bp = isCharacterType(type) ? (selectedBp === 'other' ? Number($('custom-card-bp-other').value) : Number(selectedBp)) : null;
   if (requiredEnergy === null || generatedEnergy === null) { message.textContent = 'その他を選んだエナジーには、0以上の整数を入力してください。'; return; }
   if (isCharacterType(type) && (!Number.isInteger(bp) || bp < 500)) { message.textContent = 'キャラクターのBPは500以上の整数を入力してください。'; return; }
-  const card = { name, number, type, ap: Number($('custom-card-ap').value), bp, requiredEnergy, generatedEnergy, trigger: $('custom-card-trigger').value, count: 0 };
+  const card = { name, number, type, ap: Number($('custom-card-ap').value), bp, requiredEnergy, generatedEnergy, trigger: $('custom-card-trigger').value, text: $('custom-card-text').value.trim(), count: 0 };
   const triggerGroup = triggerLimitGroup(card.trigger);
   const otherTriggerCount = triggerGroup ? cardDefinitions.reduce((sum, existing, index) => sum + (index !== editingIndex && triggerLimitGroup(existing.trigger) === triggerGroup ? buildCounts[index] : 0), 0) : 0;
   const editedCount = editingIndex === null ? 0 : buildCounts[editingIndex];
@@ -424,7 +424,7 @@ function useEffectAp() {
   closeEffectMenu();
 }
 function compactCardText(card) { return [card.name, `AP ${card.ap}`, `BP ${isCharacter(card) ? card.bp : '—'}`, `必要E ${card.requiredEnergy}`, `発生E ${card.generatedEnergy}`, card.type !== 'イベント' && card.rested ? '（レスト）' : null].filter(Boolean).join(' / '); }
-function detailCardText(card) { return [card.name, `型番 ${card.number || '番号未設定'}`, card.type, `AP ${card.ap}`, `BP ${isCharacter(card) ? card.bp : '—'}`, `必要E ${card.requiredEnergy}`, `発生E ${card.generatedEnergy}`, card.trigger, card.raidBase ? `レイド元 ${card.raidBase.name}［${card.raidBase.number || '番号未設定'}］` : null, card.type === 'イベント' ? null : card.rested ? 'レスト' : 'アクティブ'].filter(Boolean).join(' / '); }
+function detailCardText(card) { const details = [card.name, `型番 ${card.number || '番号未設定'}`, card.type, `AP ${card.ap}`, `BP ${isCharacter(card) ? card.bp : '—'}`, `必要E ${card.requiredEnergy}`, `発生E ${card.generatedEnergy}`, card.trigger, card.raidBase ? `レイド元 ${card.raidBase.name}［${card.raidBase.number || '番号未設定'}］` : null, card.type === 'イベント' ? null : card.rested ? 'レスト' : 'アクティブ'].filter(Boolean).join(' / '); return `${details}\n\nテキスト：\n${card.text || '未設定'}`; }
 function cardElement(card) { const button = document.createElement('button'); button.textContent = compactCardText(card); button.className = state.selected === card.id ? 'selected' : ''; button.draggable = true; button.ondragstart = event => { event.dataTransfer.setData('text/plain', card.id); event.dataTransfer.effectAllowed = 'move'; }; enableTouchDrag(button, card); button.onclick = () => { if (Date.now() < suppressCardClickUntil) return; state.selected = state.selected === card.id ? null : card.id; state.moveMode = false; render(); }; return button; }
 let touchDrag = null;
 let suppressCardClickUntil = 0;
