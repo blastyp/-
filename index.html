@@ -21,14 +21,15 @@
       <button id="delete-deck" type="button">登録を削除</button>
     </nav>
     <p id="deck-save-message" aria-live="polite"></p>
-    <div class="builder-layout">
-      <section class="zone"><h2>カード一覧</h2><div id="builder-cards" class="builder-cards"></div></section>
-      <section class="zone">
-        <h2>カードを追加</h2>
+    <div class="builder-layout" id="builder-list-view">
+      <section class="zone"><h2>カード一覧</h2><button id="open-card-editor" type="button" class="primary">カードを追加</button><div id="builder-cards" class="builder-cards"></div></section>
+    </div>
+    <section class="zone" id="card-editor-view" hidden>
+        <h2 id="card-editor-title">カードを追加</h2>
         <div class="card-form">
           <label>カード名 <input id="custom-card-name" type="text" maxlength="30" placeholder="例：新しいカード"></label>
           <label>カード番号 <input id="custom-card-number" type="text" maxlength="30" placeholder="例：UA01BT/XYZ-1-001"></label>
-          <label>カードタイプ <select id="custom-card-type"><option>キャラクター</option><option>イベント</option><option>フィールド</option></select></label>
+          <label>カードタイプ <select id="custom-card-type"><option>キャラクター</option><option>キャラクター（レイド）</option><option>イベント</option><option>フィールド</option></select></label>
           <label>AP <select id="custom-card-ap"><option value="0">0</option><option value="1" selected>1</option><option value="2">2</option><option value="3">3</option></select></label>
           <label id="custom-bp-label">BP（戦闘時の攻撃力） <select id="custom-card-bp"><option value="500">500</option><option value="1000" selected>1000</option><option value="1500">1500</option><option value="2000">2000</option><option value="2500">2500</option><option value="3000">3000</option><option value="3500">3500</option><option value="4000">4000</option><option value="4500">4500</option><option value="5000">5000</option><option value="other">任意の数値</option></select></label>
           <label id="custom-bp-other-label" hidden>BP（任意の数値）<input id="custom-card-bp-other" type="number" min="500" step="1" placeholder="500以上の整数"></label>
@@ -38,11 +39,10 @@
           <label>発生エナジー <select id="custom-generated-energy"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="other">その他</option></select></label>
           <label id="custom-generated-other-label" hidden>発生エナジー（任意の数値）<input id="custom-generated-other" type="number" min="0" step="1"></label>
           <button id="add-custom-card" type="button">カード一覧に追加</button>
-          <button id="cancel-custom-edit" type="button" hidden>編集を取り消す</button>
+          <button id="cancel-custom-edit" type="button">カード一覧へ戻る</button>
           <p id="custom-card-message" aria-live="polite"></p>
         </div>
-      </section>
-    </div>
+    </section>
   </section>
   <main class="app" id="practice" hidden>
     <header>
@@ -56,22 +56,71 @@
       <button id="ex-draw" class="primary">EXドロー（AP 1）</button>
       <button id="play">選択をプレイ</button>
       <button id="to-energy">エナジーへ</button>
+      <button id="move">移動</button>
       <button id="rest">レスト／アクティブ</button>
+      <button id="effects">効果</button>
       <button id="remove">退場</button>
+      <button id="board-remove">リムーブ</button>
       <button id="send-to-remove">選択をリムーブ</button>
       <button id="shield-flip">シールドをめくる</button>
-      <button id="next">次のフェーズ</button>
+      <button id="next" class="primary">次のフェーズ</button>
+      <button id="undo">1手戻る</button>
       <button id="reset">初期化</button>
       <button id="back-to-builder">デッキ構築へ戻る</button>
     </nav>
+    <section class="zone" id="line-replacement-panel" hidden>
+      <h2 id="line-replacement-title">ラインのカードをリムーブ</h2>
+      <p>リムーブエリアへ送るカードを1枚選んでください。</p>
+      <div class="controls" id="line-replacement-options"></div>
+    </section>
+    <section class="zone" id="game-result" hidden>
+      <h2>敗北</h2>
+      <p>シールドが0枚になりました。</p>
+      <div class="controls">
+        <button id="result-reset" class="primary">初期化する</button>
+        <button id="result-builder">デッキ選択に戻る</button>
+      </div>
+    </section>
+    <section class="zone" id="trigger-panel" hidden><h2 id="trigger-title">トリガー</h2><div class="raid-detail" id="trigger-card-detail" hidden></div><div class="controls" id="trigger-options"></div></section>
     <section class="zone"><h2>フロントライン（<span id="front-count">0</span>/4）</h2><div class="front" id="front"></div></section>
-    <section class="zone"><h2>エナジーライン（<span id="energy-count">0</span>/4）</h2><div class="front" id="energy"></div></section>
+    <section class="zone"><h2>エナジーライン（<span id="energy-count">0</span>/4）・発生エナジー合計：<span id="energy-total">0</span></h2><div class="front" id="energy"></div></section>
     <section class="zone"><h2>手札（<span id="hand-count">0</span>枚／上限8枚）</h2><div class="cards" id="hand"></div></section>
+    <section class="zone"><h2>カード詳細</h2><div id="card-detail">カードを選択すると詳細を表示します。</div><div id="raid-detail" class="raid-detail" hidden><strong>レイド元</strong><div>名前：<span id="raid-base-name"></span></div><div>詳細：<span id="raid-base-detail"></span></div></div></section>
     <section class="zone"><h2>デッキ（<span id="deck-count">0</span>/<span id="deck-total">50</span>枚）</h2></section>
     <section class="zone"><h2>シールド（<span id="shield-count">7</span>/7枚）</h2><div id="shield-revealed">未公開</div></section>
     <section class="zone"><h2>退場エリア</h2><div class="cards" id="trash"></div></section>
     <section class="zone"><h2>リムーブエリア</h2><div class="cards" id="removed"></div></section>
     <section class="zone"><h2>履歴</h2><ol id="history"></ol></section>
+  </main>
+  <main class="app" id="effect-menu" hidden>
+    <header>
+      <h1>効果を選択</h1>
+      <p>実行する効果を選んでください。</p>
+    </header>
+    <nav class="controls" aria-label="効果の選択">
+      <button id="effect-draw">1ドロー</button>
+      <button id="effect-ap">AP+1</button>
+      <button data-effect-type="look-add-bottom">デッキを見て手札へ／捨てる／山下へ</button>
+      <button data-effect-type="look-add-remove-bottom">デッキを見て手札へ／リムーブ／山下へ</button>
+      <button data-effect-type="draw-discard">ドローして手札から捨てる</button>
+      <button data-effect-type="recover-trash">退場から手札へ</button>
+      <button data-effect-type="recover-removed">リムーブから手札へ</button>
+      <button data-effect-type="draw-remove">ドローしてリムーブへ</button>
+      <button data-effect-type="look-one-trash">デッキを見て1枚手札／残り退場</button>
+      <button data-effect-type="look-top-trash">デッキを見て上へ戻す／残り退場</button>
+      <button id="back-to-practice">盤面へ戻る</button>
+    </nav>
+  </main>
+  <main class="app" id="effect-resolver" hidden>
+    <header>
+      <h1 id="effect-title">効果処理</h1>
+      <p id="effect-instruction" aria-live="polite"></p>
+    </header>
+    <section class="zone"><div id="effect-workspace"></div></section>
+    <nav class="controls" aria-label="効果処理の操作">
+      <button id="effect-confirm" class="primary">次へ</button>
+      <button id="effect-cancel">効果一覧へ戻る</button>
+    </nav>
   </main>
   <script src="app.js"></script>
 </body>

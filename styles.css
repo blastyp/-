@@ -1,15 +1,17 @@
 :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
 body { margin: 0; background: Canvas; color: CanvasText; }
+[hidden] { display: none !important; }
 .app { max-width: 960px; margin: auto; padding: 20px; }
 h1 { margin-bottom: 4px; }
 h2 { font-size: 1rem; margin: 0 0 8px; }
 #status { margin-top: 0; }
 .controls, .cards { display: flex; flex-wrap: wrap; gap: 8px; }
+#practice .controls #next { order: -1; }
 .controls > * { min-width: 0; }
 .controls label { display: flex; align-items: center; gap: 4px; }
 .controls input, .controls select { min-width: 0; max-width: 100%; }
 .builder-cards { display: grid; grid-template-columns: 1fr; gap: 8px; }
-.builder-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .45fr); gap: 14px; }
+.builder-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 .card-form { display: grid; gap: 10px; }
 .card-form label { display: grid; gap: 4px; }
 .card-form input, .card-form select { padding: 8px; border: 1px solid color-mix(in srgb, CanvasText 35%, transparent); border-radius: 6px; background: Canvas; color: CanvasText; font: inherit; }
@@ -21,12 +23,15 @@ h2 { font-size: 1rem; margin: 0 0 8px; }
 .builder-card .quantity { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 4px; }
 button { padding: 8px 12px; border: 1px solid color-mix(in srgb, CanvasText 35%, transparent); border-radius: 6px; background: Canvas; color: CanvasText; cursor: pointer; font: inherit; }
 .cards > button { min-width: 0; max-width: 100%; overflow-wrap: anywhere; white-space: normal; }
+#hand { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+#hand > button { width: 100%; text-align: left; }
 button.primary, button.selected { background: Highlight; color: HighlightText; border-color: Highlight; }
 .drop-target { transition: background-color .12s ease; }
 .drop-target.drag-over { background: color-mix(in srgb, Highlight 20%, Canvas); outline: 2px solid Highlight; outline-offset: 2px; }
 .touch-dragging { opacity: .45; }
 .touch-drag-ghost { position: fixed; z-index: 1000; max-width: min(280px, 70vw); pointer-events: none; opacity: .9; margin: 0; }
 .zone { margin-top: 14px; padding: 12px; border: 1px solid color-mix(in srgb, CanvasText 25%, transparent); border-radius: 8px; }
+.raid-detail { margin-top: 10px; padding: 10px; border: 1px solid color-mix(in srgb, CanvasText 25%, transparent); border-radius: 6px; display: grid; gap: 5px; overflow-wrap: anywhere; }
 .front { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .slot { min-height: 52px; padding: 8px; border: 1px dashed color-mix(in srgb, CanvasText 35%, transparent); border-radius: 6px; }
 .slot-label { display: block; margin-bottom: 7px; font-size: .85rem; opacity: .75; }
@@ -39,9 +44,14 @@ button.primary, button.selected { background: Highlight; color: HighlightText; b
   .controls label { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; }
   .controls button { padding: 9px 6px; overflow-wrap: anywhere; }
   .zone { margin-top: 10px; padding: 9px; }
-  .front { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-  .slot { min-height: 46px; padding: 6px; }
+  .raid-detail { margin-top: 8px; padding: 8px; }
+  .front { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+  .slot { min-width: 0; min-height: 46px; padding: 4px; }
+  .slot-label { margin-bottom: 4px; font-size: .75rem; }
+  .slot > button { width: 100%; padding: 8px 2px; font-size: .8rem; }
   .cards { display: grid; grid-template-columns: 1fr; }
+  #hand { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+  #hand > button { padding: 7px 4px; font-size: .78rem; }
   .cards > button { width: 100%; text-align: left; }
 }
 @media (max-width: 360px) {
