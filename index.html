@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ユニオンアリーナ 練習盤面</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <section class="app" id="deck-builder">
+    <header>
+      <h1>デッキ構築</h1>
+      <p>デッキ <strong id="builder-total">50</strong>/50枚 ・ 同名カードは4枚まで</p>
+    </header>
+    <nav class="controls" aria-label="デッキ構築操作">
+      <button id="builder-start" class="primary">練習盤面へ</button>
+      <label>デッキ名 <input id="deck-name" type="text" maxlength="30" placeholder="例：練習用デッキ"></label>
+      <button id="save-deck" type="button">デッキを登録</button>
+      <label>登録済み <select id="saved-decks"><option value="">選択してください</option></select></label>
+      <button id="load-deck" type="button">読み込む</button>
+      <button id="delete-deck" type="button">登録を削除</button>
+    </nav>
+    <p id="deck-save-message" aria-live="polite"></p>
+    <div class="builder-layout">
+      <section class="zone"><h2>カード一覧</h2><div id="builder-cards" class="builder-cards"></div></section>
+      <section class="zone">
+        <h2>カードを追加</h2>
+        <div class="card-form">
+          <label>カード名 <input id="custom-card-name" type="text" maxlength="30" placeholder="例：新しいカード"></label>
+          <label>カード番号 <input id="custom-card-number" type="text" maxlength="30" placeholder="例：UA01BT/XYZ-1-001"></label>
+          <label>カードタイプ <select id="custom-card-type"><option>キャラクター</option><option>イベント</option><option>フィールド</option></select></label>
+          <label>AP <select id="custom-card-ap"><option value="0">0</option><option value="1" selected>1</option><option value="2">2</option><option value="3">3</option></select></label>
+          <label id="custom-bp-label">BP（戦闘時の攻撃力） <select id="custom-card-bp"><option value="500">500</option><option value="1000" selected>1000</option><option value="1500">1500</option><option value="2000">2000</option><option value="2500">2500</option><option value="3000">3000</option><option value="3500">3500</option><option value="4000">4000</option><option value="4500">4500</option><option value="5000">5000</option><option value="other">任意の数値</option></select></label>
+          <label id="custom-bp-other-label" hidden>BP（任意の数値）<input id="custom-card-bp-other" type="number" min="500" step="1" placeholder="500以上の整数"></label>
+          <label>トリガー効果 <select id="custom-card-trigger"><option>トリガーなし</option><option>アクティブトリガー</option><option>ドロートリガー</option><option>レイドトリガー</option><option>ゲットトリガー</option><option>スペシャルトリガー</option><option>ファイナルトリガー</option><option>カラートリガー（赤）</option><option>カラートリガー（青）</option><option>カラートリガー（緑）</option><option>カラートリガー（黄）</option><option>カラートリガー（紫）</option></select></label>
+          <label>必要エナジー <select id="custom-required-energy"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="other">その他</option></select></label>
+          <label id="custom-required-other-label" hidden>必要エナジー（任意の数値）<input id="custom-required-other" type="number" min="0" step="1"></label>
+          <label>発生エナジー <select id="custom-generated-energy"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="other">その他</option></select></label>
+          <label id="custom-generated-other-label" hidden>発生エナジー（任意の数値）<input id="custom-generated-other" type="number" min="0" step="1"></label>
+          <button id="add-custom-card" type="button">カード一覧に追加</button>
+          <button id="cancel-custom-edit" type="button" hidden>編集を取り消す</button>
+          <p id="custom-card-message" aria-live="polite"></p>
+        </div>
+      </section>
+    </div>
+  </section>
+  <main class="app" id="practice" hidden>
+    <header>
+      <h1>ユニオンアリーナ 練習盤面</h1>
+      <p id="status" aria-live="polite">ターン 1 ・ ドローフェーズ ・ AP 1/1 ・ 選択：なし</p>
+    </header>
+    <nav class="controls" aria-label="ゲーム操作">
+      <label>手番 <select id="player-order"><option value="first">先攻</option><option value="second">後攻</option></select></label>
+      <button id="mulligan">マリガン（1回）</button>
+      <button id="start-game" class="primary">ゲーム開始</button>
+      <button id="ex-draw" class="primary">EXドロー（AP 1）</button>
+      <button id="play">選択をプレイ</button>
+      <button id="to-energy">エナジーへ</button>
+      <button id="rest">レスト／アクティブ</button>
+      <button id="remove">退場</button>
+      <button id="send-to-remove">選択をリムーブ</button>
+      <button id="shield-flip">シールドをめくる</button>
+      <button id="next">次のフェーズ</button>
+      <button id="reset">初期化</button>
+      <button id="back-to-builder">デッキ構築へ戻る</button>
+    </nav>
+    <section class="zone"><h2>フロントライン（<span id="front-count">0</span>/4）</h2><div class="front" id="front"></div></section>
+    <section class="zone"><h2>エナジーライン（<span id="energy-count">0</span>/4）</h2><div class="front" id="energy"></div></section>
+    <section class="zone"><h2>手札（<span id="hand-count">0</span>枚／上限8枚）</h2><div class="cards" id="hand"></div></section>
+    <section class="zone"><h2>デッキ（<span id="deck-count">0</span>/<span id="deck-total">50</span>枚）</h2></section>
+    <section class="zone"><h2>シールド（<span id="shield-count">7</span>/7枚）</h2><div id="shield-revealed">未公開</div></section>
+    <section class="zone"><h2>退場エリア</h2><div class="cards" id="trash"></div></section>
+    <section class="zone"><h2>リムーブエリア</h2><div class="cards" id="removed"></div></section>
+    <section class="zone"><h2>履歴</h2><ol id="history"></ol></section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
