@@ -216,6 +216,8 @@ function playSelected() {
 }
 function makeDropTarget(element, target, slot = null) {
   element.classList.add('drop-target');
+  element.dataset.dropTarget = target;
+  element.dataset.dropSlot = slot === null ? '' : String(slot);
   element.ondragover = event => { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; element.classList.add('drag-over'); };
   element.ondragleave = () => element.classList.remove('drag-over');
   element.ondrop = event => { event.preventDefault(); element.classList.remove('drag-over'); const id = event.dataTransfer.getData('text/plain'); if (id) moveCard(id, target, slot); };
@@ -227,7 +229,69 @@ function exDraw() {
   if (state.ap < 1) { record('APが足りないためEXドローできません'); render(); return; }
   state.ap--; state.exDrawUsed = true; draw(false); record('EXドロー：APを1支払い、カードを1枚引いた'); render();
 }
-function cardElement(card) { const button = document.createElement('button'); button.textContent = `${card.name} ［${card.number || '番号未設定'} / ${card.type} / AP ${card.ap}${card.type === 'キャラクター' ? ` / BP ${card.bp}` : ''} / 必要E ${card.requiredEnergy} / 発生E ${card.generatedEnergy} / ${card.trigger}］${card.rested ? '（レスト）' : ''}`; button.className = state.selected === card.id ? 'selected' : ''; button.draggable = true; button.ondragstart = event => { event.dataTransfer.setData('text/plain', card.id); event.dataTransfer.effectAllowed = 'move'; }; button.onclick = () => { state.selected = state.selected === card.id ? null : card.id; render(); }; return button; }
+function cardElement(card) { const button = document.createElement('button'); button.textContent = `${card.name} ［${card.number || '番号未設定'} / ${card.type} / AP ${card.ap}${card.type === 'キャラクター' ? ` / BP ${card.bp}` : ''} / 必要E ${card.requiredEnergy} / 発生E ${card.generatedEnergy} / ${card.trigger}］${card.rested ? '（レスト）' : ''}`; button.className = state.selected === card.id ? 'selected' : ''; button.draggable = true; button.ondragstart = event => { event.dataTransfer.setData('text/plain', card.id); event.dataTransfer.effectAllowed = 'move'; }; enableTouchDrag(button, card); button.onclick = () => { if (Date.now() < suppressCardClickUntil) return; state.selected = state.selected === card.id ? null : card.id; render(); }; return button; }
+let touchDrag = null;
+let suppressCardClickUntil = 0;
+
+function clearTouchDrag() {
+  if (!touchDrag) return;
+  touchDrag.source.classList.remove('touch-dragging');
+  touchDrag.overTarget?.classList.remove('drag-over');
+  touchDrag.ghost.remove();
+  touchDrag = null;
+}
+
+function updateTouchDrag(clientX, clientY) {
+  if (!touchDrag) return;
+  touchDrag.ghost.style.left = `${clientX + 12}px`;
+  touchDrag.ghost.style.top = `${clientY + 12}px`;
+  const target = document.elementFromPoint(clientX, clientY)?.closest('[data-drop-target]');
+  if (target === touchDrag.overTarget) return;
+  touchDrag.overTarget?.classList.remove('drag-over');
+  touchDrag.overTarget = target || null;
+  touchDrag.overTarget?.classList.add('drag-over');
+}
+
+function enableTouchDrag(button, card) {
+  button.addEventListener('touchstart', event => {
+    if (event.touches.length !== 1) return;
+    const touch = event.touches[0];
+    const ghost = button.cloneNode(true);
+    ghost.className = 'touch-drag-ghost';
+    ghost.removeAttribute('draggable');
+    document.body.append(ghost);
+    ghost.style.left = `${touch.clientX + 12}px`;
+    ghost.style.top = `${touch.clientY + 12}px`;
+    touchDrag = { id: card.id, source: button, ghost, startX: touch.clientX, startY: touch.clientY, dragging: false, overTarget: null };
+  }, { passive: true });
+  button.addEventListener('touchmove', event => {
+    if (!touchDrag || touchDrag.id !== card.id || event.touches.length !== 1) return;
+    const touch = event.touches[0];
+    if (!touchDrag.dragging && Math.hypot(touch.clientX - touchDrag.startX, touch.clientY - touchDrag.startY) < 8) return;
+    touchDrag.dragging = true;
+    event.preventDefault();
+    touchDrag.source.classList.add('touch-dragging');
+    updateTouchDrag(touch.clientX, touch.clientY);
+  }, { passive: false });
+  button.addEventListener('touchend', event => {
+    if (!touchDrag || touchDrag.id !== card.id) return;
+    const drag = touchDrag;
+    const touch = event.changedTouches[0];
+    if (drag.dragging) {
+      event.preventDefault();
+      suppressCardClickUntil = Date.now() + 500;
+      const target = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('[data-drop-target]');
+      const zone = target?.dataset.dropTarget;
+      const slot = target?.dataset.dropSlot === '' ? null : Number(target?.dataset.dropSlot);
+      clearTouchDrag();
+      if (zone) moveCard(drag.id, zone, slot);
+      return;
+    }
+    clearTouchDrag();
+  });
+  button.addEventListener('touchcancel', clearTouchDrag);
+}
+
 function cards(zone) { const node = $(zone); node.replaceChildren(); const content = state[zone]; if (!content.length) node.textContent = '空'; else content.forEach(card => node.append(cardElement(card))); }
 function place(zone, slot) { if (!state.selected || state[zone][slot]) return; moveCard(state.selected, zone, slot); }
 function render() {

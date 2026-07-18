@@ -24,6 +24,8 @@ button { padding: 8px 12px; border: 1px solid color-mix(in srgb, CanvasText 35%,
 button.primary, button.selected { background: Highlight; color: HighlightText; border-color: Highlight; }
 .drop-target { transition: background-color .12s ease; }
 .drop-target.drag-over { background: color-mix(in srgb, Highlight 20%, Canvas); outline: 2px solid Highlight; outline-offset: 2px; }
+.touch-dragging { opacity: .45; }
+.touch-drag-ghost { position: fixed; z-index: 1000; max-width: min(280px, 70vw); pointer-events: none; opacity: .9; margin: 0; }
 .zone { margin-top: 14px; padding: 12px; border: 1px solid color-mix(in srgb, CanvasText 25%, transparent); border-radius: 8px; }
 .front { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .slot { min-height: 52px; padding: 8px; border: 1px dashed color-mix(in srgb, CanvasText 35%, transparent); border-radius: 6px; }
