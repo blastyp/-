@@ -14,11 +14,11 @@ h2 { font-size: 1rem; margin: 0 0 8px; }
 .card-form label { display: grid; gap: 4px; }
 .card-form input, .card-form select { padding: 8px; border: 1px solid color-mix(in srgb, CanvasText 35%, transparent); border-radius: 6px; background: Canvas; color: CanvasText; font: inherit; }
 @media (max-width: 680px) { .builder-layout { grid-template-columns: 1fr; } }
-.builder-card { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px; border: 1px solid color-mix(in srgb, CanvasText 25%, transparent); border-radius: 6px; }
+.builder-card { display: flex; align-items: stretch; flex-direction: column; gap: 8px; padding: 8px; border: 1px solid color-mix(in srgb, CanvasText 25%, transparent); border-radius: 6px; }
 .builder-card-info { min-width: 0; flex: 1; }
 .builder-card-name { font-weight: 700; overflow-wrap: anywhere; }
 .builder-card-detail { margin-top: 3px; font-size: .86em; overflow-wrap: anywhere; }
-.builder-card .quantity { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+.builder-card .quantity { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 4px; }
 button { padding: 8px 12px; border: 1px solid color-mix(in srgb, CanvasText 35%, transparent); border-radius: 6px; background: Canvas; color: CanvasText; cursor: pointer; font: inherit; }
 .cards > button { min-width: 0; max-width: 100%; overflow-wrap: anywhere; white-space: normal; }
 button.primary, button.selected { background: Highlight; color: HighlightText; border-color: Highlight; }
@@ -36,8 +36,6 @@ button.primary, button.selected { background: Highlight; color: HighlightText; b
   .controls > * { width: 100%; box-sizing: border-box; }
   .controls label { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; }
   .controls button { padding: 9px 6px; overflow-wrap: anywhere; }
-  .builder-card { align-items: stretch; flex-direction: column; }
-  .builder-card .quantity { justify-content: flex-start; }
   .zone { margin-top: 10px; padding: 9px; }
   .front { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
   .slot { min-height: 46px; padding: 6px; }
